@@ -61,7 +61,7 @@ async function runConcurrencyTest() {
   const reservationAttempt = async (index: number) => {
     try {
       // Simulate the exact API transaction block
-      const res = await prisma.$transaction(async (tx) => {
+      const res = await prisma.$transaction(async (tx: any) => {
         // Run lazy cleanup (simulation of raw workflow)
         await cleanupExpiredReservations(tx);
 
