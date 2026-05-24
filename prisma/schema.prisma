@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  sku          String        @unique
+  price        Float
+  imageUrl     String?
+  stocks       Stock[]
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Warehouse {
+  id           String        @id @default(uuid())
+  name         String
+  location     String
+  stocks       Stock[]
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Stock {
+  id            String    @id @default(uuid())
+  productId     String
+  warehouseId   String
+  totalUnits    Int
+  reservedUnits Int       @default(0)
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([productId, warehouseId])
+}
+
+model Reservation {
+  id          String    @id @default(uuid())
+  productId   String
+  warehouseId String
+  quantity    Int
+  status      String    @default("PENDING") // PENDING, CONFIRMED, RELEASED
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+}
+
+model IdempotencyKey {
+  key            String   @id
+  status         String   // PROCESSING, COMPLETED
+  responseStatus Int?
+  responseBody   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
